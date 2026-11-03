@@ -6,7 +6,8 @@
   "scripts": {
     "start:producer": "node producer.js",
     "start:consumer": "node consumer.js",
-    "start:consumer2": "node consumer2.js"
+    "start:consumer2": "node consumer2.js",
+    "start:consumer3": "node consumer3.js"
   },
   "keywords": [
     "kafka",

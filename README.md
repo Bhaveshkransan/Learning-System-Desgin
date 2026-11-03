@@ -43,9 +43,11 @@ Learning-System-Desgin/
 ├── kafka-lab/                      # Module 01: Apache Kafka
 │   ├── docker-compose.yml          # Kafka Broker in KRaft mode (no Zookeeper)
 │   ├── package.json                # Dependencies and npm scripts
-│   ├── producer.js                 # Produces events with key-based partitioning
-│   ├── consumer.js                 # Primary consumer instance
-│   └── consumer2.js                # Second consumer demonstrating group rebalancing
+│   ├── producer.js                 # Produces 1,000 events with partition distribution report
+│   ├── consumer.js                 # Consumer 1 (Partition 0)
+│   ├── consumer2.js                # Consumer 2 (Partition 1)
+│   ├── consumer3.js                # Consumer 3 (Partition 2 - 1:1 balance)
+│   └── README.md                   # Kafka lab detailed documentation
 │
 └── rabbitmq-demo/                  # Module 02: RabbitMQ & Transactional Outbox
     ├── docker-compose.yml          # PostgreSQL 16 + RabbitMQ (Management UI)

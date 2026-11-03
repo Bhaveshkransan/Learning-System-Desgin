@@ -1,56 +1,69 @@
 
 const { Kafka } = require("kafkajs");
 
-// 1. Configure connection to our Kafka broker
 const kafka = new Kafka({
-  clientId: "instagram-activity-app",
+  clientId: "instagram-producer",
   brokers: ["localhost:9092"],
 });
 
-// 2. Create a producer
 const producer = kafka.producer();
 
 async function main() {
-  // 3. Connect to Kafka
-  await producer.connect();
+  const numberOfUsers = 1000;
+  const topic = "user-events";
 
-  console.log("Connected to Kafka!");
+  const partitionCounts = {};
 
-  // 4. Simulate 10 different users
-  for (let i = 1; i <= 10; i++) {
+  try {
+    await producer.connect();
+    console.log("Connected to Kafka!");
 
-    const event = {
-      eventId: `event-${i}`,
-      userId: `user-${i}`,
-      action: i % 2 === 0 ? "LIKE" : "LOGIN",
-      postId: `post-${100 + i}`,
-      timestamp: new Date().toISOString(),
-    };
+    const startTime = Date.now();
 
-    // 5. Send this event to Kafka
-    const result = await producer.send({
-      topic: "user-events",
-      messages: [
-        {
-          key: event.userId,
-          value: JSON.stringify(event),
-        },
-      ],
-    });
+    for (let i = 1; i <= numberOfUsers; i++) {
+      const userId = `user-${i}`;
 
-    console.log(
-      `Sent: ${event.userId} | Action: ${event.action} | Partition: ${result[0].partition} | Offset: ${result[0].baseOffset}`
-    );
+      const event = {
+        userId,
+        action: i % 2 === 0 ? "LIKE" : "LOGIN",
+        postId: `post-${100 + i}`,
+        timestamp: new Date().toISOString(),
+      };
+
+      const result = await producer.send({
+        topic,
+        messages: [
+          {
+            key: userId,
+            value: JSON.stringify(event),
+          },
+        ],
+      });
+
+      const partition = result[0].partition;
+
+      partitionCounts[partition] =
+        (partitionCounts[partition] || 0) + 1;
+
+      if (i % 100 === 0) {
+        console.log(`${i} users' events sent`);
+      }
+    }
+
+    const duration = Date.now() - startTime;
+
+    console.log("\n========== FINAL REPORT ==========");
+    console.log("Total users:", numberOfUsers);
+    console.log("Total events:", numberOfUsers);
+    console.log("Partition distribution:", partitionCounts);
+    console.log("Time taken:", duration, "ms");
+    console.log("==================================");
+
+  } catch (error) {
+    console.error("Producer error:", error);
+  } finally {
+    await producer.disconnect();
   }
-
-  // 6. Disconnect after sending all events
-  await producer.disconnect();
-
-  console.log("All events sent successfully!");
 }
 
-main().catch(async (error) => {
-  console.error("Producer failed:", error);
-  await producer.disconnect();
-  process.exit(1);
-});
+main();

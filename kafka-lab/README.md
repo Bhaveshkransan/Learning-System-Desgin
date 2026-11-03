@@ -29,8 +29,8 @@ flowchart LR
 
     subgraph Consumer_Group ["Consumer Group: activity-processing-group"]
         P0 --> C1["Consumer 1 (consumer.js)"]
-        P1 --> C1
-        P2 --> C2["Consumer 2 (consumer2.js)"]
+        P1 --> C2["Consumer 2 (consumer2.js)"]
+        P2 --> C3["Consumer 3 (consumer3.js)"]
     end
 ```
 
@@ -42,9 +42,10 @@ flowchart LR
 kafka-lab/
 ├── docker-compose.yml          # One-click Kafka broker setup (KRaft mode, no Zookeeper required)
 ├── package.json                # Node.js dependencies and run scripts
-├── producer.js                 # Publishes simulated user activity events (LIKE / LOGIN)
-├── consumer.js                 # First consumer listening on 'user-events' topic
-└── consumer2.js                # Second consumer in the same group to demonstrate load balancing
+├── producer.js                 # Publishes 1,000 simulated events with key partition reporting
+├── consumer.js                 # Consumer 1 (assigned Partition 0)
+├── consumer2.js                # Consumer 2 (assigned Partition 1)
+└── consumer3.js                # Consumer 3 (assigned Partition 2)
 ```
 
 ---
@@ -86,31 +87,41 @@ Consumer connected!
 Waiting for events...
 ```
 
-*(Optional - Recommended for learning load balancing)*: Open a second terminal and start **Consumer 2**:
+*(Optional - Recommended for 3-partition load balancing)*:
+Open two more terminals and start **Consumer 2** and **Consumer 3**:
+
 ```bash
+# Terminal 2:
 npm run start:consumer2
-# or: node consumer2.js
+
+# Terminal 3:
+npm run start:consumer3
 ```
 
 ---
 
 ### 4. Run the Producer
 
-In another terminal, run the **Producer** to send 10 simulated events:
+In another terminal, run the **Producer** to send 1,000 simulated events across 3 partitions:
 ```bash
 npm run start:producer
 # or: node producer.js
 ```
 
-*Producer Output:*
+*Producer Output with Partition Distribution:*
 ```text
 Connected to Kafka!
-Sent: user-1 | Action: LOGIN | Partition: 1 | Offset: 0
-Sent: user-2 | Action: LIKE  | Partition: 0 | Offset: 0
-Sent: user-3 | Action: LOGIN | Partition: 2 | Offset: 0
-Sent: user-4 | Action: LIKE  | Partition: 0 | Offset: 1
+100 users' events sent
+200 users' events sent
 ...
-All events sent successfully!
+1000 users' events sent
+
+========== FINAL REPORT ==========
+Total users: 1000
+Total events: 1000
+Partition distribution: { '0': 328, '1': 339, '2': 333 }
+Time taken: 1450 ms
+==================================
 ```
 
 ---
@@ -168,3 +179,4 @@ docker exec -it kafka-learning-broker /opt/kafka/bin/kafka-consumer-groups.sh --
 ```bash
 docker compose down
 ```
+
