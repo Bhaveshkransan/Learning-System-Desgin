@@ -1,0 +1,25 @@
+{
+  "name": "kafka-lab",
+  "version": "1.0.0",
+  "description": "Hands-on Apache Kafka practice lab with Node.js and KafkaJS",
+  "main": "producer.js",
+  "scripts": {
+    "start:producer": "node producer.js",
+    "start:consumer": "node consumer.js",
+    "start:consumer2": "node consumer2.js"
+  },
+  "keywords": [
+    "kafka",
+    "apache-kafka",
+    "kafkajs",
+    "event-driven",
+    "microservices",
+    "producer-consumer"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "kafkajs": "^2.2.4"
+  }
+}
