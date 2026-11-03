@@ -6,147 +6,92 @@ A comprehensive, hands-on repository dedicated to learning and mastering **Syste
 
 ## 🗺️ System Design Learning Roadmap
 
-| Module | Topic | Implementation / Lab | Status |
-| :--- | :--- | :--- | :--- |
-| **01** | **Distributed Message Streaming & Pub-Sub** | Apache Kafka (Event-Driven Architecture) | ✅ Completed |
-| **02** | **Distributed Caching & In-Memory Store** | Redis (Cache-Aside, Write-Through, Invalidation) | ⏳ Coming Soon |
-| **03** | **API Rate Limiting & Throttling** | Token Bucket / Leaky Bucket Algorithms | ⏳ Coming Soon |
-| **04** | **Load Balancing & Reverse Proxies** | NGINX / Round Robin & Least Connections | ⏳ Coming Soon |
-| **05** | **Database Scaling & Partitioning** | Sharding, Read-Replicas & Replication Lag | ⏳ Coming Soon |
-| **06** | **Consistency & Consensus** | Raft / Distributed Transactions (2PC, Saga) | ⏳ Coming Soon |
+| Module | Topic | Pattern / Technology | Directory | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| **01** | **Distributed Message Streaming** | Apache Kafka (Partitions, Consumer Groups, Offsets) | [`kafka-lab/`](./kafka-lab) | ✅ Completed |
+| **02** | **Reliable Message Queuing & Outbox** | RabbitMQ + PostgreSQL (Transactional Outbox, DLQ) | [`rabbitmq-demo/`](./rabbitmq-demo) | ✅ Completed |
+| **03** | **Distributed Caching & In-Memory Store** | Redis (Cache-Aside, Write-Through, Invalidation) | *`redis-cache/`* | ⏳ Coming Soon |
+| **04** | **API Rate Limiting & Throttling** | Token Bucket / Leaky Bucket Algorithms | *`rate-limiter/`* | ⏳ Coming Soon |
+| **05** | **Load Balancing & Reverse Proxies** | NGINX / Round Robin & Least Connections | *`load-balancer/`* | ⏳ Coming Soon |
+| **06** | **Database Scaling & Partitioning** | Sharding, Read-Replicas & Replication Lag | *`db-sharding/`* | ⏳ Coming Soon |
 
 ---
 
-## 📦 Module 01: Apache Kafka & Event-Driven Architecture
+## ⚖️ System Design Focus: Kafka vs. RabbitMQ
 
-This module implements a practical event-driven system simulating an **Instagram-like user activity feed** using **Node.js** and **KafkaJS**. It explores how modern distributed systems handle high-throughput event streams with zero message loss and guaranteed ordering.
+A classic architectural dilemma in System Design: when should you use **Kafka** vs. **RabbitMQ**? This repository includes hands-on labs for both:
 
-### 🧠 Core Concepts Covered
-
-1. **Brokers & Topics**: Real-time event streams segmented into high-throughput append-only logs.
-2. **Message Partitioning by Key**: Using `userId` as the message key ensures all events from a given user are routed to the same partition, preserving **strict chronological order**.
-3. **Consumer Groups**: Horizontal scaling pattern where Kafka distributes partitions among active consumer instances in the same group (`activity-processing-group`).
-4. **Partition Rebalancing**: How Kafka automatically reallocates partition ownership when consumer instances join or leave.
-5. **Offsets & Commit Strategies**: Tracking message delivery positions to prevent duplication and message loss.
-
----
-
-### 🏗️ Architecture Diagram
-
-```mermaid
-flowchart LR
-    P["Producer (producer.js)\nKey: userId"] --> T["Kafka Topic: user-events"]
-
-    subgraph Kafka_Broker ["Kafka Broker (localhost:9092)"]
-        direction TB
-        T --> P0["Partition 0"]
-        T --> P1["Partition 1"]
-        T --> P2["Partition 2"]
-    end
-
-    subgraph Consumer_Group ["Consumer Group: activity-processing-group"]
-        P0 --> C1["Consumer 1 (consumer.js)"]
-        P1 --> C1
-        P2 --> C2["Consumer 2 (consumer2.js)"]
-    end
-```
+| Feature | Apache Kafka (`kafka-lab/`) | RabbitMQ (`rabbitmq-demo/`) |
+| :--- | :--- | :--- |
+| **Model** | Distributed Append-Only Log (Pull-based) | Smart Broker / Message Queue (Push-based) |
+| **Best For** | High-throughput event streaming, metrics, event sourcing | Complex routing, task queuing, request/reply, transactional workflows |
+| **Message Consumption** | Consumers track offsets; messages persist even after consumption | Messages are deleted from queue once acknowledged (ACK) |
+| **Ordering** | Guaranteed per-partition using message keys | FIFO within a single queue |
+| **Scaling** | Partition-based consumer groups | Multiple worker threads / prefetch consumer scaling |
+| **Failure Handling** | Reprocessing via offset rewind; consumer lag monitoring | Dead-Letter Queues (DLQ), poison pill routing, retries |
 
 ---
 
-### 📂 Lab Directory Structure
+## 📂 Repository Structure
 
 ```text
 Learning-System-Desgin/
-├── docker-compose.yml          # One-click Kafka broker in KRaft mode (no Zookeeper needed)
-├── .gitignore                  # Clean gitignore excluding node_modules and logs
-├── README.md                   # System design roadmap & lab documentation
-└── kafka-lab/
-    ├── package.json            # Dependencies and npm shortcut scripts
-    ├── producer.js             # Simulates 10 user events (LIKE / LOGIN) with message keys
-    ├── consumer.js             # First consumer listening on 'user-events'
-    └── consumer2.js            # Second consumer in the same group (demonstrates load balancing)
+│
+├── .gitignore                      # Global gitignore (node_modules, logs, .env)
+├── README.md                       # Main System Design roadmap & documentation
+│
+├── kafka-lab/                      # Module 01: Apache Kafka
+│   ├── docker-compose.yml          # Kafka Broker in KRaft mode (no Zookeeper)
+│   ├── package.json                # Dependencies and npm scripts
+│   ├── producer.js                 # Produces events with key-based partitioning
+│   ├── consumer.js                 # Primary consumer instance
+│   └── consumer2.js                # Second consumer demonstrating group rebalancing
+│
+└── rabbitmq-demo/                  # Module 02: RabbitMQ & Transactional Outbox
+    ├── docker-compose.yml          # PostgreSQL 16 + RabbitMQ (Management UI)
+    ├── init.sql                    # Orders & Outbox schema with indexes
+    ├── .env.example                # Environment variables template
+    ├── server.js                   # Express REST API & Web Dashboard
+    ├── outbox_publisher.js         # Transactional Outbox poller (FOR UPDATE SKIP LOCKED)
+    ├── consumer.js                 # Resilient consumer (DLQ, prefetch, poison pill safe)
+    ├── producer.js                 # Test message publisher
+    ├── db.js                       # PostgreSQL connection pooling
+    ├── run_tests.ps1               # Automated test runner
+    ├── package.json                # Dependencies and npm scripts
+    ├── README.md                   # Detailed Outbox pattern deep-dive
+    └── public/
+        └── index.html              # Real-time Web Dashboard UI
 ```
 
 ---
 
-### ⚡ Quick Start: Running the Kafka Lab
+## 🚀 Getting Started
 
-#### 1. Prerequisites
-- [Node.js](https://nodejs.org/) (v16+)
-- [Docker & Docker Compose](https://www.docker.com/)
+Each module is **completely self-contained** with its own `docker-compose.yml` and dependencies. You can dive into any module directly:
 
-#### 2. Start Kafka Broker
-Spin up Apache Kafka in KRaft mode:
-```bash
-docker compose up -d
-```
-Verify the container is healthy:
-```bash
-docker ps
-```
-The broker listens at `localhost:9092`.
-
-#### 3. Install Dependencies
+### 1. Run Module 01: Apache Kafka Lab
 ```bash
 cd kafka-lab
+docker compose up -d
 npm install
+npm run start:consumer   # In Terminal 1
+npm run start:producer   # In Terminal 2
 ```
+👉 *Read the full guide in [kafka-lab/README.md](./README.md#module-01-apache-kafka--event-driven-architecture).*
 
-#### 4. Start the Consumers
-In Terminal 1:
+### 2. Run Module 02: RabbitMQ & Transactional Outbox Lab
 ```bash
-npm run start:consumer
+cd rabbitmq-demo
+docker compose up -d
+npm install
+cp .env.example .env
+npm run start:server     # Terminal 1: API & Dashboard on http://localhost:3000
+npm run start:publisher  # Terminal 2: Outbox Publisher
+npm run start:consumer   # Terminal 3: Resilient Worker with DLQ
 ```
-
-*(Optional for load balancing)* In Terminal 2:
-```bash
-npm run start:consumer2
-```
-
-#### 5. Produce User Events
-In Terminal 3:
-```bash
-npm run start:producer
-```
-
----
-
-### 🧪 System Design Experiments to Try
-
-1. **Guaranteed Ordering by Partition Key**:
-   - Inspect the logs for `userId: "user-2"`.
-   - Observe that every action for `user-2` routes to the exact same partition every single time.
-2. **Consumer Group Load Balancing**:
-   - Run both `consumer.js` and `consumer2.js` side-by-side.
-   - Run `producer.js` and see partitions automatically shared between the two consumers.
-3. **Fault Tolerance & Rebalancing**:
-   - Terminate Consumer 1 with `Ctrl + C`.
-   - Observe Consumer 2 immediately picking up Consumer 1's assigned partitions without dropping events.
-
----
-
-### 🛠️ Useful Kafka CLI Commands (Docker)
-
-```bash
-# List all topics
-docker exec -it kafka-learning-broker /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
-
-# Inspect topic partitions & replicas
-docker exec -it kafka-learning-broker /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic user-events
-
-# Inspect consumer group lag and partition assignments
-docker exec -it kafka-learning-broker /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group activity-processing-group
-```
-
----
-
-### 🛑 Tear Down
-
-```bash
-docker compose down
-```
+👉 *Read the full architectural guide in [rabbitmq-demo/README.md](./rabbitmq-demo/README.md).*
 
 ---
 
 ## 🤝 Contributing & Learning
-This repository is an ongoing journey through system design principles. New modules and real-world architectures will be added regularly. Feel free to star ⭐, fork, and practice along!
+This repository is an ongoing hands-on journey through System Design and Distributed Systems. Star ⭐ the repository and watch for new modules!
