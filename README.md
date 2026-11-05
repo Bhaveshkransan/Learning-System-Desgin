@@ -10,10 +10,11 @@ A comprehensive, hands-on repository dedicated to learning and mastering **Syste
 | :--- | :--- | :--- | :--- | :--- |
 | **01** | **Distributed Message Streaming** | Apache Kafka (Partitions, Consumer Groups, Offsets) | [`kafka-lab/`](./kafka-lab) | ✅ Completed |
 | **02** | **Reliable Message Queuing & Outbox** | RabbitMQ + PostgreSQL (Transactional Outbox, DLQ) | [`rabbitmq-demo/`](./rabbitmq-demo) | ✅ Completed |
-| **03** | **Distributed Caching & In-Memory Store** | Redis (Cache-Aside, Write-Through, Invalidation) | *`redis-cache/`* | ⏳ Coming Soon |
-| **04** | **API Rate Limiting & Throttling** | Token Bucket / Leaky Bucket Algorithms | *`rate-limiter/`* | ⏳ Coming Soon |
-| **05** | **Load Balancing & Reverse Proxies** | NGINX / Round Robin & Least Connections | *`load-balancer/`* | ⏳ Coming Soon |
-| **06** | **Database Scaling & Partitioning** | Sharding, Read-Replicas & Replication Lag | *`db-sharding/`* | ⏳ Coming Soon |
+| **03** | **Distributed Resilience & Circuit Breaker** | Circuit Breaker Pattern (Profile Service, Redis, PostgreSQL) | [circuit-breaker-lab/](./circuit-breaker-lab) | 🚧 In Progress |
+| **04** | **Distributed Caching & In-Memory Store** | Redis (Cache-Aside, Write-Through, Invalidation) | *`redis-cache/`* | ⏳ Coming Soon |
+| **05** | **API Rate Limiting & Throttling** | Token Bucket / Leaky Bucket Algorithms | *`rate-limiter/`* | ⏳ Coming Soon |
+| **06** | **Load Balancing & Reverse Proxies** | NGINX / Round Robin & Least Connections | *`load-balancer/`* | ⏳ Coming Soon |
+| **07** | **Database Scaling & Partitioning** | Sharding, Read-Replicas & Replication Lag | *`db-sharding/`* | ⏳ Coming Soon |
 
 ---
 
@@ -39,6 +40,15 @@ Learning-System-Desgin/
 │
 ├── .gitignore                      # Global gitignore (node_modules, logs, .env)
 ├── README.md                       # Main System Design roadmap & documentation
+│
+├── circuit-breaker-lab/            # Module 03: Circuit Breaker Pattern (Resilience)
+│   ├── .env.example                # Environment variables template
+│   ├── db.js                       # PostgreSQL connection pool
+│   ├── init.sql                    # Circuit breaker state schema
+│   ├── package.json                # Dependencies and scripts
+│   ├── profile-service.js          # Upstream Profile Service with failure simulation
+│   ├── redis.js                    # Redis client
+│   └── test-db.js                  # Database connectivity test
 │
 ├── kafka-lab/                      # Module 01: Apache Kafka
 │   ├── docker-compose.yml          # Kafka Broker in KRaft mode (no Zookeeper)
